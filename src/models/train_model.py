@@ -44,6 +44,7 @@ class Train:
         self.default_root_dir = opt.default_root_dir
         self.conf = self.open_config()
         self.neptune_logger= self.initialize_neptune()
+        self.conf["training"]["epochs"] = self.opt.epochs
 
 
 
