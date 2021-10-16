@@ -22,9 +22,9 @@ from asteroid.models import BaseModel
 from pytorch_lightning.callbacks import ModelCheckpoint,EarlyStopping
 from asteroid.engine.optimizers import make_optimizer
 from pytorch_lightning.loggers.neptune import NeptuneLogger
-from ..data.CallSpanish_dataset import CallSpanish
+from src.data.CallSpanish_dataset import CallSpanish
 import pandas as pd
-from ..config.base_options import BaseOptions
+from src.config.base_options import BaseOptions
 
 class Train:
     def __init__(self,opt):
@@ -33,10 +33,10 @@ class Train:
         self.experiment_name = opt.experiment_name
         self.tags= opt.tags
         self.ROOT_CSV = opt.root_csv
-        self.PATH_CSV_TRAIN = self.root_csv + opt.train_csv 
-        self.PATH_CSV_VALID = self.root_csv + opt.valid_csv
-        self.PATH_CSV_TEST = self.root_csv + opt.test_csv
-        self.PATH_CONFIG = opt.PATH_CONFIG
+        self.PATH_CSV_TRAIN = self.ROOT_CSV + opt.train_csv 
+        self.PATH_CSV_VALID = self.ROOT_CSV + opt.valid_csv
+        self.PATH_CSV_TEST = self.ROOT_CSV + opt.test_csv
+        self.PATH_CONFIG = opt.path_config
         self.df_train = pd.read_csv(self.PATH_CSV_TRAIN)
         self.df_val = pd.read_csv(self.PATH_CSV_VALID)
         self.df_test = pd.read_csv(self.PATH_CSV_TEST)
@@ -157,17 +157,28 @@ class Train:
     def run(self):
         #Create datasets train, valid, test
         #Create dataloaders
+        print("=="*30)
+        print("1.Created dataloaders ...")
         self.create_dataloaders()
 
+        print("=="*30)
+        print("2.Created configure model")
+        self.create_configure_model()
+        print("=="*30)
+
+        print("3.Training model ...")
         # Create and configure model # Train model
         self.trainer.fit(self.system)
-        
+        print("=="*30)
+
+        print("4.Save best model ...")
         # Save model best model
         self.save_best_model()
+        print("=="*30)
 
-
+        print("Stopped experiment")
         self.neptune_logger.experiment.stop()
-
+        print("=="*30)
 
 
 
