@@ -26,6 +26,14 @@ from src.data.CallSpanish_dataset import CallSpanish
 import pandas as pd
 from src.config.base_options import BaseOptions
 
+
+# Speech Embedding
+import torchaudio
+import torch.nn.functional as F
+import torchaudio.transforms as T
+from torchaudio.models.wav2vec2.utils import import_huggingface_model
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Tokenizer
+
 class Train:
     def __init__(self,opt):
         
@@ -94,8 +102,24 @@ class Train:
         return BaseModel.from_pretrained("JorisCos/ConvTasNet_Libri2Mix_sepclean_8k").cuda()
 
 
+    def speech_embedding_initialize(self):
+        original = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h").cuda()
+        speech_embedding = import_huggingface_model(original)
+        
+        for param in speech_embedding.parameters():
+            param.requires_grad = False
+        
+        return speech_embedding
+
+
+
     def create_configure_model(self):
         model = self.model_inicialize()
+
+        #speech_emedding = self.speech_embedding_initialize()
+        
+
+
         optimizer = make_optimizer(model.parameters(), **self.conf["optim"])
 
         scheduler = None
@@ -138,7 +162,7 @@ class Train:
                 
             )
 
-    def save_best_model(self):
+    def save_best_model_checkpoints(self):
         best_k = {k: v.item() for k, v in self.checkpoint.best_k_models.items()}
         with open(os.path.join(self.exp_dir, "best_k_models.json"), "w") as f:
             json.dump(best_k, f, indent=0)
@@ -173,7 +197,7 @@ class Train:
 
         print("4.Save best model ...")
         # Save model best model
-        self.save_best_model()
+        self.save_best_model_checkpoints()
         print("=="*30)
 
         print("Stopped experiment")
