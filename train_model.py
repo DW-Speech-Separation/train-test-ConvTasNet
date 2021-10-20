@@ -14,7 +14,8 @@ from asteroid.dsp.normalization import normalize_estimates
 
 import os
 from asteroid.engine.system import System
-from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
+from asteroid.losses import pairwise_neg_sisdr
+from src.losses.pit_wrapper import PITLossWrapper
 import soundfile as sf
 import torch
 import random as random
@@ -116,7 +117,8 @@ class Train:
     def create_configure_model(self):
         model = self.model_inicialize()
 
-        #speech_emedding = self.speech_embedding_initialize()
+        #Speech-Embedding
+        self.speech_emedding = self.speech_embedding_initialize()
         
 
 
