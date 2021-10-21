@@ -109,6 +109,7 @@ class Train:
 
 
     def speech_embedding_initialize(self):
+        print("Downloading Speech Embedding.....")
         original = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h").cuda()
         original.freeze_feature_extractor()
         speech_embedding = import_huggingface_model(original)
