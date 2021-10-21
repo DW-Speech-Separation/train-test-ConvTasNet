@@ -1,5 +1,5 @@
 from torch.optim import Adam
-from torch.utils.data import DataLoader,Dataset
+from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 import yaml
 import json
