@@ -153,8 +153,6 @@ class PITLossWrapper(nn.Module):
 
             loss_share = mean_loss+distance_value.cuda()
 
-            self.log("distance_value", distance_value, logger=True)
-            self.log("si-sdr", mean_loss, logger=True)
 
             return loss_share #Agregar Aquí la distancia
         reordered = self.reorder_source(est_targets, batch_indices)
