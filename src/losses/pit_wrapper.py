@@ -80,11 +80,6 @@ class PITLossWrapper(nn.Module):
         waveform_1 = torch.unsqueeze(est_targets[0,0,:], dim=0)
         waveform_2 = torch.unsqueeze(est_targets[0,1,:], dim=0)
 
-        
-
-        print(waveform_2.shape)
-
-
         features_1, _ = model.extract_features(waveform_1)
         features_2, _ = model.extract_features(waveform_2)
 
@@ -153,7 +148,14 @@ class PITLossWrapper(nn.Module):
         if not return_est:
             #Loss compartida
             distance = self.calculate_similarity(self.speech_embedding,est_targets)
-            loss_share = mean_loss+self.weight_CS*torch.log(1-distance).cuda()
+
+            distance_value = self.weight_CS*torch.log(1-distance)
+
+            loss_share = mean_loss+distance_value.cuda()
+
+            self.log("distance_value", distance_value, logger=True)
+            self.log("si-sdr", mean_loss, logger=True)
+
             return loss_share #Agregar Aquí la distancia
         reordered = self.reorder_source(est_targets, batch_indices)
         return mean_loss, reordered
