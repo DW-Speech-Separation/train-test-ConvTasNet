@@ -123,7 +123,7 @@ class Train:
         model = self.model_inicialize()
 
         #Speech-Embedding
-        self.speech_emedding = self.speech_embedding_initialize()
+        self.speech_embedding = self.speech_embedding_initialize()
         
 
 
