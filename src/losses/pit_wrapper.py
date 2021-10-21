@@ -77,8 +77,8 @@ class PITLossWrapper(nn.Module):
             )
 
     def calculate_similarity(self,model, est_targets):
-        waveform_1, _ = est_targets[0,0,:]
-        waveform_2, _ = est_targets[0,1,:] 
+        waveform_1 = est_targets[0,0,:]
+        waveform_2 = est_targets[0,1,:] 
 
 
         features_1, _ = model.extract_features(waveform_1)
