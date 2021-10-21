@@ -81,6 +81,9 @@ class PITLossWrapper(nn.Module):
         waveform_2 = est_targets[0,1,:] 
 
 
+        print(waveform_2.shape)
+
+
         features_1, _ = model.extract_features(waveform_1)
         features_2, _ = model.extract_features(waveform_2)
 
