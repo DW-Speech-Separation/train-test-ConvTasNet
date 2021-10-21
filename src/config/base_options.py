@@ -19,6 +19,7 @@ class BaseOptions():
         self.parser.add_argument('--path_config', type=str, default='src/config/conf.yml', help='path config experiment')
         self.parser.add_argument('--batch_size', type=int, default=4, help='batch size to train')
         self.parser.add_argument('--num_workers', type=int, default=4, help='# Workers')
+        self.parser.add_argument('--weight_CS', type=int, default=10, help='# weight_CS ')
         self.parser.add_argument('--epochs', type=int, default=100, help='# Epochs to train')
 
         

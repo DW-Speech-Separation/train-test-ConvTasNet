@@ -54,6 +54,7 @@ class Train:
         self.conf = self.open_config()
         self.neptune_logger= self.initialize_neptune()
         self.conf["training"]["epochs"] = self.opt.epochs
+        self.weight_CS = opt.weight_CS
 
 
 
@@ -79,6 +80,10 @@ class Train:
 
         return neptune_logger
     
+
+    
+
+
     def create_dataloaders(self):
         self.train_set = CallSpanish(
                             csv_path=self.PATH_CSV_TRAIN,
@@ -105,13 +110,13 @@ class Train:
 
     def speech_embedding_initialize(self):
         original = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h").cuda()
+        original.freeze_feature_extractor()
         speech_embedding = import_huggingface_model(original)
         
         for param in speech_embedding.parameters():
             param.requires_grad = False
         
         return speech_embedding
-
 
 
     def create_configure_model(self):
@@ -131,7 +136,7 @@ class Train:
         distributed_backend = "ddp" if torch.cuda.is_available() else None
 
         # Define Loss function.
-        loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx")
+        loss_func = PITLossWrapper(pairwise_neg_sisdr, speech_embedding = self.speech_embedding,weight_CS = self.weight_CS,pit_from="pw_mtx")
 
         self.system = System(
                     model=model,

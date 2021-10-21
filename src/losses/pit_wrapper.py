@@ -2,7 +2,9 @@ from itertools import permutations
 import torch
 from torch import nn
 from scipy.optimize import linear_sum_assignment
-
+import torchaudio
+import torch.nn.functional as F
+import torchaudio.transforms as T
 
 class PITLossWrapper(nn.Module):
     r"""Permutation invariant loss wrapper.
@@ -61,9 +63,11 @@ class PITLossWrapper(nn.Module):
         >>>                      reduce_kwargs=reduce_kwargs)
     """
 
-    def __init__(self, loss_func, pit_from="pw_mtx", perm_reduce=None):
+    def __init__(self, loss_func,speech_embedding,weight_CS, pit_from="pw_mtx", perm_reduce=None):
         super().__init__()
         self.loss_func = loss_func
+        self.speech_embedding = speech_embedding
+        self.weight_CS = weight_CS
         self.pit_from = pit_from
         self.perm_reduce = perm_reduce
         if self.pit_from not in ["pw_mtx", "pw_pt", "perm_avg"]:
@@ -71,6 +75,21 @@ class PITLossWrapper(nn.Module):
                 "Unsupported loss function type for now. Expected"
                 "one of [`pw_mtx`, `pw_pt`, `perm_avg`]"
             )
+
+    def calculate_similarity(self,model, est_targets):
+        waveform_1, _ = est_targets[0,0,:]
+        waveform_2, _ = est_targets[0,1,:] 
+
+
+        features_1, _ = model.extract_features(waveform_1)
+        features_2, _ = model.extract_features(waveform_2)
+
+
+        distance =  F.cosine_similarity(features_1[0], features_2[0], dim=0)
+
+        distance = torch.mean(distance).cuda()
+
+        return distance
 
     def forward(self, est_targets, targets, return_est=False, reduce_kwargs=None, **kwargs):
         r"""Find the best permutation and return the loss.
@@ -128,7 +147,10 @@ class PITLossWrapper(nn.Module):
         )
         mean_loss = torch.mean(min_loss)
         if not return_est:
-            return mean_loss
+            #Loss compartida
+            distance = self.calculate_similarity(self.speech_embedding,est_targets)
+            loss_share = mean_loss+self.weight_CS*torch.log(1-distance).cuda()
+            return loss_share #Agregar Aquí la distancia
         reordered = self.reorder_source(est_targets, batch_indices)
         return mean_loss, reordered
 
@@ -317,8 +339,6 @@ class PITLossWrapper(nn.Module):
         )
         min_loss = torch.gather(pwl, 2, batch_indices[..., None]).mean([-1, -2])
         return min_loss, batch_indices
-
-
 class PITReorder(PITLossWrapper):
     """Permutation invariant reorderer. Only returns the reordered estimates.
     See `:py:class:asteroid.losses.PITLossWrapper`."""
