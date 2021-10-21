@@ -151,7 +151,7 @@ class PITLossWrapper(nn.Module):
 
             distance_value = self.weight_CS*torch.log(1-distance)
 
-            loss_share = mean_loss+distance_value.cuda()
+            loss_share = mean_loss#+distance_value.cuda()
 
 
             return loss_share #Agregar Aquí la distancia
