@@ -145,18 +145,16 @@ class PITLossWrapper(nn.Module):
             pw_losses, perm_reduce=self.perm_reduce, **reduce_kwargs
         )
         mean_loss = torch.mean(min_loss)
+        
+        distance = self.calculate_similarity(self.speech_embedding,est_targets)
+        distance_value = self.weight_CS*torch.log(1-distance)
+        loss_share = mean_loss+distance_value.cuda()
+
         if not return_est:
             #Loss compartida
-            distance = self.calculate_similarity(self.speech_embedding,est_targets)
-
-            distance_value = self.weight_CS*torch.log(1-distance)
-
-            loss_share = mean_loss#+distance_value.cuda()
-
-
             return loss_share #Agregar Aquí la distancia
         reordered = self.reorder_source(est_targets, batch_indices)
-        return mean_loss, reordered
+        return loss_share, reordered
 
     @staticmethod
     def get_pw_losses(loss_func, est_targets, targets, **kwargs):
