@@ -22,6 +22,7 @@ from asteroid.metrics import get_metrics
 class Test:
     def __init__(self,opt):
         self.opt =opt
+        self.conf = self.open_config()
         self.experiment_name = opt.experiment_name
         self.tags= opt.tags
         self.ROOT_CSV = opt.root_csv
@@ -35,8 +36,10 @@ class Test:
         self.end = end
         self.exp_dir = opt.save_best_model
 
-    def download_checkpoints(self):
-        pass
+    def open_config(self):
+        with open(self.PATH_CONFIG) as f:
+            conf = yaml.safe_load(f)
+            return conf
 
     def create_test_dataset(self):
         return CallSpanish(
@@ -222,15 +225,21 @@ class Test:
 
     def run(self):
         #Create dataset
+        print("=="*30)
+        print("Create dataset...")
         test_set = self.create_test_dataset()
-            
+
+        print("=="*30)
+        print("Loading model...")    
         #Load model from checkpoints
         best_model = self.loading_model()
 
         #Run test, use neptune to report metrics and monitoring experiment
         #Guardar las metricas
+        print("=="*30)
+        print("Run test...")
         self.run_test(self.start, self.end, self.results, best_model,test_set,pretrained=True)
-
+        
 
 if __name__ == '__main__':
     # Read paramatres of command line
