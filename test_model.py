@@ -222,7 +222,8 @@ class Test:
     def loading_model(self):
         path_best_model = os.path.join(self.exp_dir, "best_model.pth")
         best_model  = ConvTasNet.from_pretrained(path_best_model)
-        best_model.cuda()
+        best_model = best_model.cuda()
+        return best_model
 
     def run(self):
         #Create dataset
