@@ -22,6 +22,7 @@ from asteroid.metrics import get_metrics
 class Test:
     def __init__(self,opt):
         self.opt =opt
+        self.PATH_CONFIG = opt.path_config
         self.conf = self.open_config()
         self.experiment_name = opt.experiment_name
         self.tags= opt.tags
@@ -239,7 +240,7 @@ class Test:
         print("=="*30)
         print("Run test...")
         self.run_test(self.start, self.end, self.results, best_model,test_set,pretrained=True)
-        
+
 
 if __name__ == '__main__':
     # Read paramatres of command line
