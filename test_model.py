@@ -24,7 +24,6 @@ class Test:
         self.opt =opt
         self.experiment_name = opt.experiment_name
         self.tags= opt.tags
-        self.experiment_name = opt.experiment_name
         self.ROOT_CSV = opt.root_csv
         self.PATH_CSV_TEST = self.ROOT_CSV + opt.test_csv
         self.results = np.zeros(10)
