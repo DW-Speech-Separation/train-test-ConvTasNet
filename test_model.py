@@ -207,7 +207,7 @@ class Test:
 
 
     def run_test(self,start, end, results, model,test_set,pretrained=True):
-        model_device = next(self.model.parameters()).device
+        model_device = next(model.parameters()).device
         loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx")
         COMPUTE_METRICS = ["si_sdr", "sdr", "sir", "sar", "stoi"]
 
