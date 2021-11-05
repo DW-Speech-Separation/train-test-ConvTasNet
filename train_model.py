@@ -40,6 +40,7 @@ class Train:
         
         self.opt =opt
         self.experiment_name = opt.experiment_name
+        self.num_layers = opt.num_layers
         self.tags= opt.tags
         self.ROOT_CSV = opt.root_csv
         self.PATH_CSV_TRAIN = self.ROOT_CSV + opt.train_csv 
@@ -137,7 +138,7 @@ class Train:
         distributed_backend = "ddp" if torch.cuda.is_available() else None
 
         # Define Loss function.
-        loss_func = PITLossWrapper(pairwise_neg_sisdr, speech_embedding = self.speech_embedding,weight_CS = self.weight_CS,pit_from="pw_mtx")
+        loss_func = PITLossWrapper(pairwise_neg_sisdr, speech_embedding = self.speech_embedding,weight_CS = self.weight_CS,pit_from="pw_mtx",num_layers=self.num_layers)
 
         self.system = System(
                     model=model,

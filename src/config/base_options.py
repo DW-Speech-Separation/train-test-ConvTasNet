@@ -21,6 +21,10 @@ class BaseOptions():
         self.parser.add_argument('--num_workers', type=int, default=4, help='# Workers')
         self.parser.add_argument('--weight_CS', type=int, default=10, help='# weight_CS ')
         self.parser.add_argument('--epochs', type=int, default=100, help='# Epochs to train')
+        self.parser.add_argument('--num_layers', type=int, default=1, help='# num_layers')
+
+
+        
 
         
 

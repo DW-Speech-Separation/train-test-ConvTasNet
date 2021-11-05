@@ -63,9 +63,10 @@ class PITLossWrapper(nn.Module):
         >>>                      reduce_kwargs=reduce_kwargs)
     """
 
-    def __init__(self, loss_func,speech_embedding,weight_CS, pit_from="pw_mtx", perm_reduce=None):
+    def __init__(self, loss_func,speech_embedding,weight_CS, pit_from="pw_mtx", perm_reduce=None,num_layers=1):
         super().__init__()
         self.loss_func = loss_func
+        self.num_layers =num_layers
         self.speech_embedding = speech_embedding
         self.weight_CS = weight_CS
         self.pit_from = pit_from
@@ -76,19 +77,23 @@ class PITLossWrapper(nn.Module):
                 "one of [`pw_mtx`, `pw_pt`, `perm_avg`]"
             )
 
-    def calculate_similarity(self,model, est_targets):
-        waveform_1 = torch.unsqueeze(est_targets[0,0,:], dim=0)
-        waveform_2 = torch.unsqueeze(est_targets[0,1,:], dim=0)
-
-        features_1, _ = model.extract_features(waveform_1)
-        features_2, _ = model.extract_features(waveform_2)
-
-
-        distance =  F.cosine_similarity(features_1[0], features_2[0], dim=0)
-
+    def calculate_similarity(self,model, est_targets,num_layers):
+        waveform_1 = est_targets[:,0]
+        waveform_2 = est_targets[:,1]
+        features_1, _ = model.extract_features(waveform_1,num_layers=num_layers)
+        features_2, _ = model.extract_features(waveform_2,num_layers=num_layers)        
+                
+        # features_1/2 => torch.Size([3, 749, 768])  [bach_size, frames, embedding_size]
+        # distance => torch.Size([3, 749]) [bach_size, frames]
+        distance =  F.cosine_similarity(features_1[num_layers-1], features_2[num_layers-1], dim=2) 
+        
+        # Luego hacemos el mean por muestra y luego el mean de todas las muestras.
         distance = torch.mean(distance).cuda()
 
         return distance
+
+
+
 
     def forward(self, est_targets, targets, return_est=False, reduce_kwargs=None, **kwargs):
         r"""Find the best permutation and return the loss.
@@ -128,7 +133,6 @@ class PITLossWrapper(nn.Module):
             # Take the mean over the batch
             mean_loss = torch.mean(min_loss)
             if not return_est:
-                print("CALCULANDO_LOSS")
                 return mean_loss
             reordered = self.reorder_source(est_targets, batch_indices)
             return mean_loss, reordered
@@ -145,10 +149,10 @@ class PITLossWrapper(nn.Module):
             pw_losses, perm_reduce=self.perm_reduce, **reduce_kwargs
         )
         mean_loss = torch.mean(min_loss)
-        
-        distance = self.calculate_similarity(self.speech_embedding,est_targets)
-        distance_value = self.weight_CS*torch.log(1-distance)
-        loss_share = mean_loss+distance_value.cuda()
+
+        similitude = self.calculate_similarity(self.speech_embedding,est_targets,self.num_layers)
+        similitude_value = -1*self.weight_CS*torch.log((1-similitude)/2)
+        loss_share = mean_loss+similitude_value.cuda()
 
         if not return_est:
             #Loss compartida
