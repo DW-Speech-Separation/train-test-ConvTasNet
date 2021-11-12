@@ -6,6 +6,14 @@
 
 # Train
 
+
+#Datasets
+
+1.https://auxiliar.s3.us-west-1.amazonaws.com/CallFriend-Caribbean-Spanish-Split.zip
+2.https://auxiliar.s3.us-west-1.amazonaws.com/CallFriend-Spanish-Split.zip
+3.https://auxiliar.s3.us-west-1.amazonaws.com/CallHome-Spanish-Corpus-Split.zip
+4.https://auxiliar.s3.us-west-1.amazonaws.com/experimental.zip
+
 1. python setup.py
 2. cd src/models/
 3. !python train_model.py --experiment_name "Entrenamiento modelo original con dataset CallFriend con loss original SI-SDR, sin embeddign" --tags "Modelo original SIN embedding" --save_best_model "/content/drive/Shareddrives/TG-Separación-Fuentes/code/Checkpoints-separation-models/ConvTasnet/best_model_100_epochs_embedding_Wav2Vect_CallFriend_Dataset_Sum_Loss/" --default_root_dir "/content/drive/Shareddrives/TG-Separación-Fuentes/code/Checkpoints-separation-models/ConvTasnet/best_model_100_epochs_embedding_Wav2Vect_CallFriend_Dataset_Sum_Loss/" --epochs 2 --num_workers 2
@@ -32,3 +40,7 @@ con dataset All con loss original SI-SDR + loss_similarity dada por el coseno si
 ## Test Model
 
 !python test_model.py --experiment_name "Test modelo original con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando Wav2Vect Speech Embedding mas peso 5" --tags "Test con WaV2Vec embedding peso 5" --save_best_model "/content/drive/Shareddrives/TG-Separación-Fuentes/code/Checkpoints-separation-models/ConvTasnet/best_model_100_epochs_embedding_Wav2Vect_CallFriend_Dataset_Sum_Loss/callFriend_weigth_5/"
+
+
+
+

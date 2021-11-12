@@ -17,7 +17,7 @@ from src.config.base_options import BaseOptions
 from torch.utils.data import DataLoader
 from asteroid.utils import tensors_to_device
 from asteroid.metrics import get_metrics
-
+import neptune.new as neptune
 
 class Test:
     def __init__(self,opt):
@@ -61,10 +61,10 @@ class Test:
         tags = [self.tags]
 
         # Definir Logger 
-        neptune_logger = NeptuneLogger(
-            api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI5NjRkMmY2YS04M2EwLTRiMGMtODk1Ny1mMWQxZTA3NGM1NzAifQ==",
-            project_name="josearangos/Tg-speech-separation",experiment_name=experiment_name,
-            params = params, tags = tags, close_after_fit=False)
+        neptune_logger = neptune.init(
+            api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI5NjRkMmY2YS04M2EwLTRiMGMtODk1Ny1mMWQxZTA3NGM1NzAifQ==",
+            project="josearangos/Tg-speech-separation",name=experiment_name,
+            tags = tags)
 
         return neptune_logger
 
@@ -96,20 +96,24 @@ class Test:
 
             r = 0
             iteration = str(i)
-            self.neptune_logger.experiment.log_metric("Iteración:", i)
+            #self.neptune_logger.experiment.log_metric("Iteración:", i)
+            self.neptune_logger['Iteración'].log(i)
 
             for metric_name in COMPUTE_METRICS:
                 input_metric_name = "input_" + metric_name     
                 results[r] = results[r] + utt_metrics[input_metric_name]                   
                 # iteration + "_"+
-                self.neptune_logger.experiment.log_metric(input_metric_name, results[r])
+                #self.neptune_logger.experiment.log_metric(input_metric_name, results[r])
+                self.neptune_logger[input_metric_name].log(results[r])
                 r = r +1
                 
 
             for metric_name in COMPUTE_METRICS:
                 results[r] = results[r] + utt_metrics[metric_name]          
                 #iteration + "_"+ 
-                self.neptune_logger.experiment.log_metric(metric_name, results[r])
+                #self.neptune_logger.experiment.log_metric(metric_name, results[r])
+                self.neptune_logger[metric_name].log(results[r])
+
                 r = r +1
             
                 
@@ -156,13 +160,15 @@ class Test:
                             self.conf["data"]["sample_rate"],
                     )
                     if (neptune_status):
-                        self.neptune_logger.experiment.log_artifact(path_estimation_source)
+                        #self.neptune_logger.experiment.log_artifact(path_estimation_source)
+                        self.neptune_logger['examples/'+path_estimation_source].upload(path_estimation_source)
 
 
                 #Send estimation wavs
                 mix_path = local_save_dir + "mixture.wav"
                 if (neptune_status):
-                    self.neptune_logger.experiment.log_artifact(mix_path)
+                    #self.neptune_logger.experiment.log_artifact(mix_path)
+                    self.neptune_logger['examples/'+mix_path].upload(mix_path)
 
                 neptune_status = False
                         
@@ -186,7 +192,8 @@ class Test:
         all_metrics_df.to_csv(all_metrics_path)
 
         #Send All metrics
-        self.neptune_logger.experiment.log_artifact(all_metrics_path)
+        #self.neptune_logger.experiment.log_artifact(all_metrics_path)
+        self.neptune_logger['metrics/'+all_metrics_path].upload(all_metrics_path)
 
         final_results = {}
         for metric_name in COMPUTE_METRICS:
@@ -203,7 +210,8 @@ class Test:
                 json.dump(final_results, f, indent=0)
 
         #Send summary metrics
-        self.neptune_logger.experiment.log_artifact(summary_metrics)
+        #self.neptune_logger.experiment.log_artifact(summary_metrics)
+        self.neptune_logger['metrics/'+summary_metrics].upload(summary_metrics)
 
 
     def run_test(self,start, end, results, model,test_set,pretrained=True):
@@ -217,7 +225,7 @@ class Test:
 
         series_list = self.step_test(start, results, model,loss_func,COMPUTE_METRICS,eval_save_dir,ex_save_dir,test_set,neptune_status,model_device,pretrained)
         self.compute_global_metrics(start,end,series_list,COMPUTE_METRICS,eval_save_dir,pretrained)  
-        self.neptune_logger.experiment.stop()
+        self.neptune_logger.stop()
 
     def loading_model(self):
         path_best_model = os.path.join(self.exp_dir, "best_model.pth")
@@ -247,6 +255,5 @@ if __name__ == '__main__':
     # Read paramatres of command line
     opt = BaseOptions().parse()
     Test(opt).run()
-
 
 

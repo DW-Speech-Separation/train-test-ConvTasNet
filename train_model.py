@@ -76,8 +76,8 @@ class Train:
         # Definir Logger 
         neptune_logger = NeptuneLogger(
             api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI5NjRkMmY2YS04M2EwLTRiMGMtODk1Ny1mMWQxZTA3NGM1NzAifQ==",
-            project_name="josearangos/Tg-speech-separation",experiment_name=experiment_name,
-            params = params, tags = tags, close_after_fit=False)
+            project="josearangos/Tg-speech-separation",name=experiment_name,
+            tags = tags)
 
         return neptune_logger
     
