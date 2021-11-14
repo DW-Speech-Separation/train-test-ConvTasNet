@@ -35,7 +35,7 @@ class CallSpanish(Dataset):
         self.segment = segment
         self.sample_rate = sample_rate
         # Open csv file
-        self.df = pd.read_csv(self.csv_path)#.iloc[0:10,:]
+        self.df = pd.read_csv(self.csv_path)
         # Get rid of the utterances too short
         if self.segment is not None:
             max_len = len(self.df)

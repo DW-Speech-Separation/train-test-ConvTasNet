@@ -97,7 +97,7 @@ class Test:
             r = 0
             iteration = str(i)
             #self.neptune_logger.experiment.log_metric("Iteración:", i)
-            self.neptune_logger['Iteración'].log(i)
+            self.neptune_logger['Iteracion'].log(i)
 
             for metric_name in COMPUTE_METRICS:
                 input_metric_name = "input_" + metric_name     
@@ -133,7 +133,7 @@ class Test:
             
             save_idx = random.sample(range(len(test_set)),self.conf["test"]["n_save_examples"])
 
-
+            """
             if idx in save_idx:
 
                 example_name = "ex_{}/".format(idx)
@@ -161,21 +161,24 @@ class Test:
                     )
                     if (neptune_status):
                         #self.neptune_logger.experiment.log_artifact(path_estimation_source)
-                        self.neptune_logger['examples/'+path_estimation_source].upload(path_estimation_source)
+                        nam = path_estimation_source.split(".")[0]
+                        self.neptune_logger['examples/'+nam+"/"].upload(path_estimation_source)
 
 
                 #Send estimation wavs
                 mix_path = local_save_dir + "mixture.wav"
                 if (neptune_status):
                     #self.neptune_logger.experiment.log_artifact(mix_path)
-                    self.neptune_logger['examples/'+mix_path].upload(mix_path)
+                    nam = mix_path.split(".")[0]
+                    self.neptune_logger['examples/'+nam+"/"].upload(mix_path)
 
                 neptune_status = False
                         
                 # Write local metrics to the example folder.
                 with open(local_save_dir + "metrics.json", "w") as f:
                     json.dump(utt_metrics, f, indent=0)
-        
+        """
+
         return series_list
 
 
@@ -193,7 +196,8 @@ class Test:
 
         #Send All metrics
         #self.neptune_logger.experiment.log_artifact(all_metrics_path)
-        self.neptune_logger['metrics/'+all_metrics_path].upload(all_metrics_path)
+        nam = all_metrics_path.split(".")[0]
+        self.neptune_logger['all_metrics'].upload(all_metrics_path)
 
         final_results = {}
         for metric_name in COMPUTE_METRICS:
@@ -211,7 +215,8 @@ class Test:
 
         #Send summary metrics
         #self.neptune_logger.experiment.log_artifact(summary_metrics)
-        self.neptune_logger['metrics/'+summary_metrics].upload(summary_metrics)
+        nam = summary_metrics.split(".")[0]
+        self.neptune_logger['final_metrics'].upload(summary_metrics)
 
 
     def run_test(self,start, end, results, model,test_set,pretrained=True):
@@ -255,5 +260,4 @@ if __name__ == '__main__':
     # Read paramatres of command line
     opt = BaseOptions().parse()
     Test(opt).run()
-
 
