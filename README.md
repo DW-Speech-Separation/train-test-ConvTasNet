@@ -51,7 +51,7 @@ con dataset All con loss original SI-SDR + loss_similarity dada por el coseno si
 
 
 python train_model.py --experiment_name "Entrenamiento modelo original \
-con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando Wav2Vect Speech Embedding mas peso 5 y 4 transformer,  " --tags "Modelo con WaV2Vec embedding" --save_best_model "models/best_model_100_epochs_embedding_Wav2Vect_CallFriend_Dataset_Sum_Loss/callFriend_weigth_5/2_transformer" --default_root_dir "models/best_model_100_epochs_embedding_Wav2Vect_CallFriend_Dataset_Sum_Loss/callFriend_weigth_5/2_transformer" --epochs 100 --num_workers 4 --weight_CS 5 --batch_size 6 --num_layers 2 --root_csv "data/csv/local/"
+con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando Wav2Vect Speech Embedding mas peso 5 y 12 transformer,  " --tags "Modelo con WaV2Vec embedding" --save_best_model "models/best_model_100_epochs_embedding_Wav2Vect_CallFriend_Dataset_Sum_Loss/callFriend_weigth_5/12_transformer" --default_root_dir "models/best_model_100_epochs_embedding_Wav2Vect_CallFriend_Dataset_Sum_Loss/callFriend_weigth_5/12_transformer" --epochs 100 --num_workers 4 --weight_CS 5 --batch_size 6 --num_layers 12 --root_csv "data/csv/local/"
 
 
 
@@ -59,3 +59,6 @@ con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el co
 
 
 !python test_model.py --experiment_name "Test modelo original con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando Wav2Vect Speech Embedding mas peso 5 y 3 Transformer" --tags "Test con WaV2Vec embedding peso 5 Test CallFriend, 3 Transformer" --save_best_model "/models/best_model_100_epochs_embedding_Wav2Vect_CallFriend_Dataset_Sum_Loss/callFriend_weigth_5/3_transformer" --root_csv "data/csv/local"
+
+
+nohup bash command.sh &
