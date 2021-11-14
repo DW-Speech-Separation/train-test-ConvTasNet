@@ -225,6 +225,7 @@ class Test:
         COMPUTE_METRICS = ["si_sdr", "sdr", "sir", "sar", "stoi"]
 
         eval_save_dir = os.path.join(self.exp_dir, "metrics")
+        os.mkdir(eval_save_dir)
         ex_save_dir = os.path.join(eval_save_dir, "examples/")
         neptune_status=True
 
