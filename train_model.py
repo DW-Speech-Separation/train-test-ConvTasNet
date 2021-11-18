@@ -111,13 +111,14 @@ class Train:
 
     def speech_embedding_initialize(self):
         print("Downloading Speech Embedding.....")
-        original = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h",force_download=True).cuda()
-        speech_embedding = import_huggingface_model(original)
+        model = torch.hub.load('pyannote/pyannote-audio', 'emb')
         
+        
+        """
         for param in speech_embedding.parameters():
             param.requires_grad = False
-        
-        return speech_embedding
+        """        
+        return model
 
 
     def create_configure_model(self):
