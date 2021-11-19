@@ -83,17 +83,17 @@ class PITLossWrapper(nn.Module):
         waveform_2 = est_targets[:,1]
         similarity = []
         for w1,w2 in zip(waveform_1,waveform_2):
-            d = w1.numpy().reshape(-1,1)
+            d = w1.detach().cpu().numpy().reshape(-1,1)
             f1 = model.get_features(d,8000)
             
-            d = w2.numpy().reshape(-1,1)
+            d = w2.detach().cpu().numpy().reshape(-1,1)
             f2 = model.get_features(d,8000)
-
-            print(f1.shape, f2.shape)
 
             similarity.append(np.mean(cosine_similarity(f1,f2)))
         
-        return torch.tensor(np.mea(similarity)).to('cuda')
+        simil = torch.tensor(np.mean(similarity)).to('cuda')
+
+        return simil 
 
 
 

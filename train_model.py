@@ -32,8 +32,6 @@ from src.config.base_options import BaseOptions
 import torchaudio
 import torch.nn.functional as F
 import torchaudio.transforms as T
-from torchaudio.models.wav2vec2.utils import import_huggingface_model
-from transformers import Wav2Vec2ForCTC, Wav2Vec2Tokenizer
 
 class Train:
     def __init__(self,opt):
@@ -113,7 +111,7 @@ class Train:
         print("Downloading Speech Embedding.....")
         model = torch.hub.load('pyannote/pyannote-audio', 'emb')
         
-        
+
         """
         for param in speech_embedding.parameters():
             param.requires_grad = False
