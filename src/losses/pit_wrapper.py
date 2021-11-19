@@ -2,7 +2,6 @@ from itertools import permutations
 import torch
 from torch import nn
 from scipy.optimize import linear_sum_assignment
-import torchaudio
 import torch.nn.functional as F
 import torchaudio.transforms as T
 
@@ -95,6 +94,8 @@ class PITLossWrapper(nn.Module):
 
 
 
+
+
     def forward(self, est_targets, targets, return_est=False, reduce_kwargs=None, **kwargs):
         r"""Find the best permutation and return the loss.
 
@@ -150,9 +151,9 @@ class PITLossWrapper(nn.Module):
         )
         mean_loss = torch.mean(min_loss)
 
-        similitude = self.calculate_similarity(self.speech_embedding,est_targets,self.num_layers)
-        similitude_value = -1*self.weight_CS*torch.log((1-similitude)/2)
-        loss_share = mean_loss+similitude_value.cuda()
+        
+                
+        loss_share = mean_loss
 
         if not return_est:
             #Loss compartida

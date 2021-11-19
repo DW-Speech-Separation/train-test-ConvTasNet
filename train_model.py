@@ -130,6 +130,8 @@ class Train:
 
         optimizer = make_optimizer(model.parameters(), **self.conf["optim"])
 
+        optimizer_cosine_similarity = make_optimizer(model.parameters(), **self.conf["optim"])
+
         scheduler = None
         if self.conf["training"]["half_lr"]:
                 scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5, patience=5)
@@ -143,6 +145,8 @@ class Train:
                     model=model,
                     loss_func=loss_func,
                     optimizer=optimizer,
+                    optimizer_cosine_similarity = optimizer_cosine_similarity,
+                    batch_iteration = self.opt.batch_iteration,
                     train_loader=self.train_loader,
                     val_loader=self.val_loader,
                     scheduler=scheduler,

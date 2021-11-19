@@ -22,6 +22,7 @@ class BaseOptions():
         self.parser.add_argument('--weight_CS', type=int, default=10, help='# weight_CS ')
         self.parser.add_argument('--epochs', type=int, default=100, help='# Epochs to train')
         self.parser.add_argument('--num_layers', type=int, default=1, help='# num_layers')
+        self.parser.add_argument('--batch_iteration', type=int, default=5, help='# batch_iteration used to similarity')
 
 
         
