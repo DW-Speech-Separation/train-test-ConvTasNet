@@ -68,3 +68,8 @@ con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el co
 
 
 nohup bash command.sh &
+
+
+
+
+g4dn.xlarge
