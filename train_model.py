@@ -13,7 +13,7 @@ from tqdm import tqdm
 from asteroid.dsp.normalization import normalize_estimates
 
 import os
-from asteroid.engine.system import System
+from src.engine.system import System
 from asteroid.losses import pairwise_neg_sisdr
 from src.losses.pit_wrapper import PITLossWrapper
 import soundfile as sf
@@ -132,9 +132,13 @@ class Train:
 
         optimizer_cosine_similarity = make_optimizer(model.parameters(), **self.conf["optim"])
 
+        #optimizer_cosine_similarity = torch.optim.Adam(model.parameters(),lr=0.001)
+
         scheduler = None
         if self.conf["training"]["half_lr"]:
                 scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5, patience=5)
+
+
         gpus = -1 if torch.cuda.is_available() else None
         distributed_backend = "ddp" if torch.cuda.is_available() else None
 
@@ -143,10 +147,12 @@ class Train:
 
         self.system = System(
                     model=model,
-                    loss_func=loss_func,
                     optimizer=optimizer,
                     optimizer_cosine_similarity = optimizer_cosine_similarity,
                     batch_iteration = self.opt.batch_iteration,
+                    num_layers = self.opt.num_layers,
+                    speech_embedding  = self.speech_embedding,
+                    loss_func=loss_func,
                     train_loader=self.train_loader,
                     val_loader=self.val_loader,
                     scheduler=scheduler,
@@ -155,12 +161,12 @@ class Train:
         # Define callbacks
         callbacks = []
         checkpoint_dir = os.path.join(self.exp_dir, "checkpoints/")
-        self.checkpoint = ModelCheckpoint(checkpoint_dir, monitor="val_loss", mode="min", save_top_k=5, verbose=True)
+        self.checkpoint = ModelCheckpoint(checkpoint_dir, monitor="Valid_original_loss", mode="min", save_top_k=5, verbose=True)
 
         # Stop Early
         callbacks.append(self.checkpoint)
         if self.conf["training"]["early_stop"]:
-            callbacks.append(EarlyStopping(monitor="val_loss", mode="min", patience=30, verbose=True))
+            callbacks.append(EarlyStopping(monitor="Valid_original_loss", mode="min", patience=30, verbose=True))
 
         self.trainer= pl.Trainer(
                 max_epochs=self.conf["training"]["epochs"],
@@ -169,7 +175,7 @@ class Train:
                 gpus=gpus,
                 #distributed_backend=distributed_backend,
                 limit_train_batches=1.0,  # Useful for fast experiment
-                gradient_clip_val=5.0,
+                #gradient_clip_val=5.0,
                 logger=self.neptune_logger
                 
             )

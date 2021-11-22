@@ -64,7 +64,7 @@ class System(pl.LightningModule):
     https://pytorch-lightning.readthedocs.io/en/stable/lightning_module.html#lightningmodule-api
     """
 
-    default_monitor: str = "val_loss"
+    default_monitor: str = "Valid_original_loss"
 
     def __init__(
         self,
@@ -72,6 +72,8 @@ class System(pl.LightningModule):
         optimizer,
         optimizer_cosine_similarity,
         batch_iteration,
+        num_layers,
+        speech_embedding,
         loss_func,
         train_loader,
         val_loader=None,
@@ -80,11 +82,12 @@ class System(pl.LightningModule):
     ):
         super().__init__()
         self.automatic_optimization = False
-
+        self.num_layers = num_layers,
         self.model = model
         self.batch_iteration = batch_iteration,
         self.optimizer = optimizer
-        self.optimizer_cosine_similarity = optimizer_cosine_similarity
+        self.optimizer_cosine_similarity = optimizer_cosine_similarity,
+        self.speech_embedding = speech_embedding,
         self.loss_func = loss_func
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -92,6 +95,7 @@ class System(pl.LightningModule):
         self.config = {} if config is None else config
         # Save lightning's AttributeDict under self.hparams
         self.save_hyperparameters(self.config_to_hparams(self.config))
+
 
     def forward(self, *args, **kwargs):
         """Applies forward pass of the model.
@@ -101,7 +105,7 @@ class System(pl.LightningModule):
         """
         return self.model(*args, **kwargs)
 
-    def common_step(self, batch, batch_nb, train=True):
+    def common_step(self, batch, batch_nb, state='Train'):
         """Common forward step between training and validation.
 
         The function of this method is to unpack the data given by the loader,
@@ -131,12 +135,19 @@ class System(pl.LightningModule):
         #loss = self.loss_func(est_targets, targets)
 
 
-        [opt1,opt2],_ = self.optimizers()
+        #opts,epoch_schedulers = self.optimizers()
+        opt1,opt2 = self.optimizers()
+
+        #opt1 = opts[0]
+        #opt2 = opts[1]
+
+        #print("TYPE",type(self.epoch_schedulers), self.epoch_schedulers)#len(self.epoch_schedulers))
 
         def closure():
             inputs, targets = batch
             est_targets = self(inputs)
             loss = self.loss_func(est_targets, targets)
+            self.log(state+"_original_loss", loss,on_epoch=True, prog_bar=True)
             opt1.zero_grad()
             self.manual_backward(loss)
             return loss
@@ -147,39 +158,36 @@ class System(pl.LightningModule):
             inputs, targets = batch
             est_targets = self(inputs)
             loss_2 = self.loss_similarity(est_targets)
+            self.log(state+"_similarity_loss", loss_2, on_epoch=True, prog_bar=True)
             opt2.zero_grad()
             self.manual_backward(loss_2)
             return loss_2
 
         opt2.step(closure=closure_similarity)
 
-        
+        #self.epoch_schedulers["scheduler"].step('val_loss')
         #return loss
 
-    def calculate_similarity(self,model, est_targets,num_layers):
-            waveform_1 = est_targets[:,0]
-            waveform_2 = est_targets[:,1]
-            features_1, _ = model.extract_features(waveform_1,num_layers=num_layers)
-            features_2, _ = model.extract_features(waveform_2,num_layers=num_layers)        
-                    
-            # features_1/2 => torch.Size([3, 749, 768])  [bach_size, frames, embedding_size]
-            # distance => torch.Size([3, 749]) [bach_size, frames]
-            distance =  F.cosine_similarity(features_1[num_layers-1], features_2[num_layers-1], dim=2) 
-            
-            # Luego hacemos el mean por muestra y luego el mean de todas las muestras.
-            distance = torch.mean(distance).cuda()
+    def calculate_similarity(self,model, est_targets,num_layers):      
+          waveform_1 = est_targets[:,0]
+          waveform_2 = est_targets[:,1]
+          features_1, _ = model.extract_features(waveform_1,num_layers=num_layers)
+          features_2, _ = model.extract_features(waveform_2,num_layers=num_layers)        
+                  
+          # features_1/2 => torch.Size([3, 749, 768])  [bach_size, frames, embedding_size]
+          # distance => torch.Size([3, 749]) [bach_size, frames]
+          distance =  F.cosine_similarity(features_1[num_layers-1], features_2[num_layers-1], dim=2) 
+          
+          # Luego hacemos el mean por muestra y luego el mean de todas las muestras.
+          distance = torch.mean(distance).cuda()
 
-            return distance
+          return distance
 
-        def loss_similarity(self,est_targets):
-        similitude = self.calculate_similarity(self.speech_embedding,est_targets,self.num_layers)
-        similitude_value = torch.log((1-similitude)/2)
-        return similitude_value.cuda()
     
     
     def loss_similarity(self,est_targets):
-        similitude = self.calculate_similarity(self.speech_embedding,est_targets,self.num_layers)
-        similitude_value = torch.log((1-similitude)/2)
+        similitude = self.calculate_similarity(self.speech_embedding[0],est_targets,self.num_layers[0])
+        similitude_value = -1*torch.log((1-similitude)/2)
         return similitude_value.cuda()
 
 
@@ -197,7 +205,7 @@ class System(pl.LightningModule):
             torch.Tensor, the value of the loss.
         """
         #loss = self.common_step(batch, batch_nb, train=True)
-        self.common_step(batch, batch_nb, train=True)
+        self.common_step(batch, batch_nb, state='Train')
         #self.log("loss", loss, logger=True)
 
        
@@ -213,33 +221,42 @@ class System(pl.LightningModule):
         """
         #loss = self.common_step(batch, batch_nb, train=False)
         #self.log("val_loss", loss, on_epoch=True, prog_bar=True)
-        self.common_step(batch, batch_nb, train=False)
+        self.common_step(batch, batch_nb, state='Valid')
         
 
     def on_validation_epoch_end(self):
         """Log hp_metric to tensorboard for hparams selection."""
-        hp_metric = self.trainer.callback_metrics.get("val_loss", None)
+        hp_metric = self.trainer.callback_metrics.get("Valid_original_loss", None)
         if hp_metric is not None:
             self.trainer.logger.log_metrics({"hp_metric": hp_metric}, step=self.trainer.global_step)
 
 
     def optimizer_step(self,epoch,batch_idx,optimizer,optimizer_idx,optimizer_closure,on_tpu=False,using_native_amp=False,using_lbfgs=False):            # update generator every step
-            
-            if optimizer_idx == 0:
+            # https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.core.lightning.html#pytorch_lightning.core.lightning.LightningModule.configure_optimizers
+            """
+            Search ==> # update discriminator opt every 2 steps
+
+            """
+
+
+            if optimizer_idx == 0: # Update every step
                 optimizer.step(closure=optimizer_closure)
 
-            if optimizer_idx == 1:
-                if (batch_idx + 1) % self.batch_iteration == 0:
+            if optimizer_idx == 1: 
+                if (batch_idx + 1) % self.batch_iteration[0] == 0: # Update every  batch_iteration step steps
+
                     # the closure (which includes the `training_step`) will be executed by `optimizer.step`
                     optimizer.step(closure=optimizer_closure)
                 else:
                     optimizer_closure()
 
-
+    def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
+        optimizer.zero_grad(set_to_none=True)
 
 
     def configure_optimizers(self):
         """Initialize optimizers, batch-wise and epoch-wise schedulers."""
+        
         if self.scheduler is None:
             return self.optimizer
 
@@ -263,8 +280,11 @@ class System(pl.LightningModule):
                     "step",
                 ], "Scheduler interval should be either step or epoch"
                 epoch_schedulers.append(sched)
-        return [self.optimizer,self.optimizer_cosine_similarity], epoch_schedulers
 
+        self.epoch_schedulers = epoch_schedulers[0]
+
+        optimizers = [self.optimizer,self.optimizer_cosine_similarity[0]]
+        return optimizers#, epoch_schedulers ,
     def train_dataloader(self):
         """Training dataloader"""
         return self.train_loader
