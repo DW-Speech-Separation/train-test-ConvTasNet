@@ -144,7 +144,6 @@ class System(pl.LightningModule):
         #print("TYPE",type(self.epoch_schedulers), self.epoch_schedulers)#len(self.epoch_schedulers))
 
         def closure():
-            print("ENTRE A ORIGINAL")
             inputs, targets = batch
             est_targets = self(inputs)
             loss = self.loss_func(est_targets, targets)
@@ -156,7 +155,6 @@ class System(pl.LightningModule):
         self.optimizer_step(optimizer=opt1,batch_idx=batch_nb,optimizer_idx=0, optimizer_closure=closure)
 
         def closure_similarity():
-            print("ENTRE A SIMILARITY")
             inputs, targets = batch
             est_targets = self(inputs)
             loss_2 = self.loss_similarity(est_targets)
@@ -245,7 +243,6 @@ class System(pl.LightningModule):
             Search ==> # update discriminator opt every 2 steps
 
             """
-            print("IDEXXXXXXXXXX",batch_idx ,self.batch_iteration[0])
             if optimizer_idx == 0: # Update every step
                 optimizer.step(closure=optimizer_closure)
 
