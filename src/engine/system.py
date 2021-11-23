@@ -239,7 +239,7 @@ class System(pl.LightningModule):
             self.trainer.logger.log_metrics({"hp_metric": hp_metric}, step=self.trainer.global_step)
 
 
-    def optimizer_step(self,epoch,batch_idx,optimizer,optimizer_idx,optimizer_closure,on_tpu=False,using_native_amp=False,using_lbfgs=False):            # update generator every step
+    def optimizer_step(self,batch_idx,optimizer,optimizer_idx,optimizer_closure,on_tpu=False,using_native_amp=False,using_lbfgs=False):            # update generator every step
             # https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.core.lightning.html#pytorch_lightning.core.lightning.LightningModule.configure_optimizers
             """
             Search ==> # update discriminator opt every 2 steps
