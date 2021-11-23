@@ -190,7 +190,7 @@ class System(pl.LightningModule):
     def loss_similarity(self,est_targets):
         similitude = self.calculate_similarity(self.speech_embedding[0],est_targets,self.num_layers[0])
         similitude_value = -1*torch.log((1-similitude)/2)
-        return similitude_value.cuda()
+        return similitude_value#.cuda()
 
 
     def training_step(self, batch, batch_nb):
@@ -250,7 +250,6 @@ class System(pl.LightningModule):
 
             if optimizer_idx == 1: 
                 if (batch_idx + 1) % self.batch_iteration[0] == 0: # Update every  batch_iteration step steps
-
                     # the closure (which includes the `training_step`) will be executed by `optimizer.step`
                     optimizer.step(closure=optimizer_closure)
                 else:
