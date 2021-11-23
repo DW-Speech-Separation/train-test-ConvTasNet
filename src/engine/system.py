@@ -245,6 +245,7 @@ class System(pl.LightningModule):
             Search ==> # update discriminator opt every 2 steps
 
             """
+            print("IDEXXXXXXXXXX",batch_idx ,self.batch_iteration[0])
             if optimizer_idx == 0: # Update every step
                 optimizer.step(closure=optimizer_closure)
 
