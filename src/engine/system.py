@@ -162,7 +162,7 @@ class System(pl.LightningModule):
             loss_2 = self.loss_similarity(est_targets)
             self.log(state+"_similarity_loss", loss_2, on_epoch=True, prog_bar=True)
             opt2.zero_grad()
-            self.manual_backward(loss_2)
+            #self.manual_backward(loss_2)
             return loss_2
 
         self.optimizer_step(optimizer=opt2,batch_idx=batch_nb,optimizer_idx=1, optimizer_closure=closure_similarity)
@@ -254,7 +254,6 @@ class System(pl.LightningModule):
                     # the closure (which includes the `training_step`) will be executed by `optimizer.step`
                     optimizer.step(closure=optimizer_closure)
                 else:
-                    print("Descarte")
                     optimizer_closure()
 
     def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
