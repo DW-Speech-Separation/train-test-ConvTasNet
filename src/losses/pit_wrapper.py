@@ -151,15 +151,12 @@ class PITLossWrapper(nn.Module):
         )
         mean_loss = torch.mean(min_loss)
 
-        
-                
-        loss_share = mean_loss
 
         if not return_est:
             #Loss compartida
-            return loss_share #Agregar Aquí la distancia
+            return mean_loss #Agregar Aquí la distancia
         reordered = self.reorder_source(est_targets, batch_indices)
-        return loss_share, reordered
+        return mean_loss, reordered
 
     @staticmethod
     def get_pw_losses(loss_func, est_targets, targets, **kwargs):

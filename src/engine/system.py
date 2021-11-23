@@ -144,6 +144,7 @@ class System(pl.LightningModule):
         #print("TYPE",type(self.epoch_schedulers), self.epoch_schedulers)#len(self.epoch_schedulers))
 
         def closure():
+            print("ENTRE A ORIGINAL")
             inputs, targets = batch
             est_targets = self(inputs)
             loss = self.loss_func(est_targets, targets)
@@ -155,6 +156,7 @@ class System(pl.LightningModule):
         opt1.step(closure=closure)
 
         def closure_similarity():
+            print("ENTRE A SIMILARITY")
             inputs, targets = batch
             est_targets = self(inputs)
             loss_2 = self.loss_similarity(est_targets)

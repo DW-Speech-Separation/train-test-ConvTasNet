@@ -132,8 +132,6 @@ class Train:
 
         optimizer_cosine_similarity = make_optimizer(model.parameters(), **self.conf["optim"])
 
-        #optimizer_cosine_similarity = torch.optim.Adam(model.parameters(),lr=0.001)
-
         scheduler = None
         if self.conf["training"]["half_lr"]:
                 scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5, patience=5)
