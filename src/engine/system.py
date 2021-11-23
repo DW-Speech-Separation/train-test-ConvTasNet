@@ -153,7 +153,7 @@ class System(pl.LightningModule):
             self.manual_backward(loss)
             return loss
 
-        opt1.step(closure=closure)
+        self.optimizer_step(optimizer=opt1,batch_idx=batch_nb,optimizer_idx=0, optimizer_closure=closure)
 
         def closure_similarity():
             print("ENTRE A SIMILARITY")
@@ -165,7 +165,7 @@ class System(pl.LightningModule):
             self.manual_backward(loss_2)
             return loss_2
 
-        opt2.step(closure=closure_similarity)
+        self.optimizer_step(optimizer=opt2,batch_idx=batch_nb,optimizer_idx=1, optimizer_closure=closure_similarity)
 
         #self.epoch_schedulers["scheduler"].step('val_loss')
         #return loss
@@ -210,6 +210,12 @@ class System(pl.LightningModule):
         self.common_step(batch, batch_nb, state='Train')
         #self.log("loss", loss, logger=True)
 
+
+
+
+
+
+
        
         #return loss
 
@@ -239,8 +245,6 @@ class System(pl.LightningModule):
             Search ==> # update discriminator opt every 2 steps
 
             """
-
-
             if optimizer_idx == 0: # Update every step
                 optimizer.step(closure=optimizer_closure)
 
