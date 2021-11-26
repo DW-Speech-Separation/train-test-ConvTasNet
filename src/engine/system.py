@@ -3,6 +3,7 @@ import pytorch_lightning as pl
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from collections.abc import MutableMapping
 import torch.nn.functional as F
+from torch.autograd import Variable
 
 
 def flatten_dict(d, parent_key="", sep="_"):
@@ -160,7 +161,7 @@ class System(pl.LightningModule):
             loss_2 = self.loss_similarity(est_targets)
             self.log(state+"_similarity_loss", loss_2, on_epoch=True, prog_bar=True)
             opt2.zero_grad()
-            #self.manual_backward(loss_2)
+            self.manual_backward(loss_2)
             return loss_2
 
         self.optimizer_step(optimizer=opt2,batch_idx=batch_nb,optimizer_idx=1, optimizer_closure=closure_similarity)
@@ -177,9 +178,12 @@ class System(pl.LightningModule):
           # features_1/2 => torch.Size([3, 749, 768])  [bach_size, frames, embedding_size]
           # distance => torch.Size([3, 749]) [bach_size, frames]
           distance =  F.cosine_similarity(features_1[num_layers-1], features_2[num_layers-1], dim=2) 
-          
+
           # Luego hacemos el mean por muestra y luego el mean de todas las muestras.
-          distance = torch.mean(distance).cuda()
+          distance = torch.mean(distance)#.cuda()
+
+          distance = Variable(distance, requires_grad=True)
+        
 
           return distance
 
@@ -188,6 +192,9 @@ class System(pl.LightningModule):
     def loss_similarity(self,est_targets):
         similitude = self.calculate_similarity(self.speech_embedding[0],est_targets,self.num_layers[0])
         similitude_value = -1*torch.log((1-similitude)/2)
+
+        similitude_value = Variable(similitude_value, requires_grad=True)
+
         return similitude_value#.cuda()
 
 
@@ -207,13 +214,6 @@ class System(pl.LightningModule):
         #loss = self.common_step(batch, batch_nb, train=True)
         self.common_step(batch, batch_nb, state='Train')
         #self.log("loss", loss, logger=True)
-
-
-
-
-
-
-
        
         #return loss
 

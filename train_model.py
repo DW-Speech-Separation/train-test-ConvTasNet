@@ -114,9 +114,11 @@ class Train:
         original = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h",force_download=True).cuda()
         speech_embedding = import_huggingface_model(original)
         
+        """
         for param in speech_embedding.parameters():
-            param.requires_grad = False
-        
+            #param.requires_grad = True #False
+            print(param.requires_grad)
+        """
         return speech_embedding
 
 
@@ -125,14 +127,13 @@ class Train:
 
         #Speech-Embedding
         self.speech_embedding = self.speech_embedding_initialize()
-        
-
 
         optimizer = make_optimizer(model.parameters(), **self.conf["optim"])
 
         optimizer_cosine_similarity = make_optimizer(model.parameters(), **self.conf["optim"])
 
         scheduler = None
+        
         if self.conf["training"]["half_lr"]:
                 scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5, patience=5)
 
@@ -143,6 +144,8 @@ class Train:
         # Define Loss function.
         loss_func = PITLossWrapper(pairwise_neg_sisdr, speech_embedding = self.speech_embedding,weight_CS = self.weight_CS,pit_from="pw_mtx",num_layers=self.num_layers)
 
+
+        
         self.system = System(
                     model=model,
                     optimizer=optimizer,
@@ -154,7 +157,7 @@ class Train:
                     train_loader=self.train_loader,
                     val_loader=self.val_loader,
                     scheduler=scheduler,
-                    config=self.conf,
+                    config=self.conf
                 )
         # Define callbacks
         callbacks = []
