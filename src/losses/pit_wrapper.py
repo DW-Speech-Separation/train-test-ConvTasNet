@@ -90,8 +90,10 @@ class PITLossWrapper(nn.Module):
         embeddings_2 =  torch.from_numpy(model.infer(waveforms_2)) #(batch_size, 512 )
 
         print(embeddings_2.shape, embeddings_1.shape)
-        distance = F.cosine_similarity(embeddings_1, embeddings_2, dim=2)
+        distance = F.cosine_similarity(embeddings_1, embeddings_2, dim=1)
 
+        print("Distance", distance.shape)
+        
         return torch.mean(distance) 
 
 
