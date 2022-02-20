@@ -26,6 +26,7 @@ from pytorch_lightning.loggers.neptune import NeptuneLogger
 from src.data.CallSpanish_dataset import CallSpanish
 import pandas as pd
 from src.config.base_options import BaseOptions
+from pyannote.audio.core.inference import Inference
 
 
 # Speech Embedding
@@ -109,7 +110,7 @@ class Train:
 
     def speech_embedding_initialize(self):
         print("Downloading Speech Embedding.....")
-        model = torch.hub.load('pyannote/pyannote-audio', 'emb')
+        model = Inference("pyannote/embedding", window="whole", device="cuda")
         
 
         """

@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import torchaudio.transforms as T
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+
 class PITLossWrapper(nn.Module):
     r"""Permutation invariant loss wrapper.
 
@@ -79,21 +80,18 @@ class PITLossWrapper(nn.Module):
             )
 
     def calculate_similarity(self,model, est_targets,num_layers):
-        waveform_1 = est_targets[:,0]
-        waveform_2 = est_targets[:,1]
-        similarity = []
-        for w1,w2 in zip(waveform_1,waveform_2):
-            d = w1.detach().cpu().numpy().reshape(-1,1)
-            f1 = model.get_features(d,8000)
-            
-            d = w2.detach().cpu().numpy().reshape(-1,1)
-            f2 = model.get_features(d,8000)
+        waveforms_1 = est_targets[:,0]
+        waveforms_2 = est_targets[:,1]
 
-            similarity.append(np.mean(cosine_similarity(f1,f2)))
-        
-        simil = torch.tensor(np.mean(similarity)).to('cuda')
+        #(batch_size, num_channels, num_samples)
 
-        return simil 
+        embeddings_1 =  model.infer(waveforms_1) #(batch_size, 512 )
+        embeddings_2 =  model.infer(waveforms_2) #(batch_size, 512 )
+
+        print(embeddings_2.shape, embeddings_1.shape)
+        distance = F.cosine_similarity(embeddings_1, embeddings_2, dim=2)
+
+        return torch.mean(distance) 
 
 
 
