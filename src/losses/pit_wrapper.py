@@ -86,8 +86,8 @@ class PITLossWrapper(nn.Module):
         #(batch_size, num_channels, num_samples)
 
         print("*****************++",waveforms_1.shape)
-        embeddings_1 =  model.infer(waveforms_1) #(batch_size, 512 )
-        embeddings_2 =  model.infer(waveforms_2) #(batch_size, 512 )
+        embeddings_1 =  model(waveforms_1) #(batch_size, 512 )
+        embeddings_2 =  model(waveforms_2) #(batch_size, 512 )
 
         print(embeddings_2.shape, embeddings_1.shape)
         distance = F.cosine_similarity(embeddings_1, embeddings_2, dim=2)
