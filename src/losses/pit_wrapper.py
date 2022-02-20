@@ -80,8 +80,8 @@ class PITLossWrapper(nn.Module):
             )
 
     def calculate_similarity(self,model, est_targets,num_layers):
-        waveforms_1 = torch.unsqueeze(est_targets[:,0],2)
-        waveforms_2 = torch.unsqueeze(est_targets[:,1],2)
+        waveforms_1 = torch.unsqueeze(est_targets[:,0],1)
+        waveforms_2 = torch.unsqueeze(est_targets[:,1],1)
 
         #(batch_size, num_channels, num_samples)
 
