@@ -76,3 +76,22 @@ con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el co
 
 
 nohup bash command.sh &
+
+
+
+
+
+
+
+python train_model.py --experiment_name "Entrenamiento modelo original \
+con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando pyannote Speech Embedding mas peso 10  " --tags "Modelo con Pyannote embedding" --save_best_model "models/best_model_100_epochs_embedding_PYANNOTE_CallFriend_Dataset_Iterative_Loss/callFriend_weigth_10" --default_root_dir "models/best_model_100_epochs_embedding_PYANNOTE_CallFriend_Dataset_Iterative_Loss/callFriend_weigth_10" --epochs 100 --num_workers 4 --weight_CS 10 --batch_size 6 --num_layers 5 --root_csv "data/csv/local/"
+
+
+
+!python test_model.py --experiment_name "Test modelo original con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando PYANNOTE Speech Embedding mas peso 5" --tags "Test con PYANNOTE embedding peso 10 Test CallFriend" --save_best_model "/models/best_model_100_epochs_embedding_PYANNOTE_CallFriend_Dataset_Iterative_Loss/callFriend_weigth_10" --root_csv "data/csv/local"
+
+
+python test_model.py --experiment_name "Test modelo original con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando PYANNOTE Speech Embedding mas peso 10" --tags "Test con PYANNOTE embedding peso 10 Test CallFriend" --save_best_model "/models/best_model_100_epochs_embedding_PYANNOTE_CallFriend_Dataset_Iterative_Loss/callFriend_weigth_10" --root_csv "data/csv/local"
+
+python train_model.py --experiment_name "Entrenamiento modelo original \
+con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando pyannote Speech Embedding mas peso 10  " --tags "Modelo con Pyannote embedding" --save_best_model "models/best_model_100_epochs_embedding_PYANNOTE_CallFriend_Dataset_Iterative_Loss/callFriend_weigth_10" --default_root_dir "models/best_model_100_epochs_embedding_PYANNOTE_CallFriend_Dataset_Iterative_Loss/callFriend_weigth_10" --epochs 100 --num_workers 4 --weight_CS 1 --batch_size 6 --num_layers 5 --root_csv "data/csv/local/"

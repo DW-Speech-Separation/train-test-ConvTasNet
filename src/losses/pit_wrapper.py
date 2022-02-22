@@ -153,7 +153,8 @@ class PITLossWrapper(nn.Module):
         mean_loss = torch.mean(min_loss)
 
         similitude = self.calculate_similarity(self.speech_embedding,est_targets,self.num_layers)
-        similitude_value = -1*self.weight_CS*torch.log((1-similitude)/2)
+        #similitude_value = -1*self.weight_CS*torch.log((1-similitude)/2)
+        similitude_value = -1*self.weight_CS*torch.log((1-similitude))
         loss_share = mean_loss+similitude_value.cuda()
 
         if not return_est:
