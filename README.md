@@ -95,3 +95,7 @@ python test_model.py --experiment_name "Test modelo original con dataset CallFri
 
 python train_model.py --experiment_name "Entrenamiento modelo original \
 con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando pyannote Speech Embedding mas peso 10  " --tags "Modelo con Pyannote embedding" --save_best_model "models/best_model_100_epochs_embedding_PYANNOTE_CallFriend_Dataset_Iterative_Loss/callFriend_weigth_10" --default_root_dir "models/best_model_100_epochs_embedding_PYANNOTE_CallFriend_Dataset_Iterative_Loss/callFriend_weigth_10" --epochs 100 --num_workers 4 --weight_CS 1 --batch_size 6 --num_layers 5 --root_csv "data/csv/local/"
+
+
+
+python test_model.py --experiment_name "Test modelo original con dataset CallFriend con loss original SI-SDR + loss_similarity dada por el coseno similarity usando PYANNOTE Speech Embedding mas peso 1 sin dividir por 2" --tags "Test con PYANNOTE embedding peso 1 Test CallFriend sin dividir por 2 " --save_best_model "./models/best_model_100_epochs_embedding_PYANNOTE_CallFriend_Dataset_Iterative_Loss/callFriend_weigth_1" --root_csv "data/csv/local/"
