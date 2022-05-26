@@ -1,5 +1,5 @@
 from torch.optim import Adam
-from torch.utils.data import DataLoader,Dataset
+from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 import yaml
 import json
@@ -14,7 +14,8 @@ from asteroid.dsp.normalization import normalize_estimates
 
 import os
 from asteroid.engine.system import System
-from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
+from asteroid.losses import pairwise_neg_sisdr
+from src.losses.pit_wrapper import PITLossWrapper
 import soundfile as sf
 import torch
 import random as random
@@ -39,6 +40,7 @@ class Train:
         
         self.opt =opt
         self.experiment_name = opt.experiment_name
+        self.num_layers = opt.num_layers
         self.tags= opt.tags
         self.ROOT_CSV = opt.root_csv
         self.PATH_CSV_TRAIN = self.ROOT_CSV + opt.train_csv 
@@ -53,6 +55,7 @@ class Train:
         self.conf = self.open_config()
         self.neptune_logger= self.initialize_neptune()
         self.conf["training"]["epochs"] = self.opt.epochs
+        self.weight_CS = opt.weight_CS
 
 
 
@@ -73,11 +76,15 @@ class Train:
         # Definir Logger 
         neptune_logger = NeptuneLogger(
             api_key="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI5NjRkMmY2YS04M2EwLTRiMGMtODk1Ny1mMWQxZTA3NGM1NzAifQ==",
-            project_name="josearangos/Tg-speech-separation",experiment_name=experiment_name,
-            params = params, tags = tags, close_after_fit=False)
+            project="josearangos/Tg-speech-separation",name=experiment_name,log_model_checkpoints=False,
+            tags = tags)
 
         return neptune_logger
     
+
+    
+
+
     def create_dataloaders(self):
         self.train_set = CallSpanish(
                             csv_path=self.PATH_CSV_TRAIN,
@@ -103,7 +110,8 @@ class Train:
 
 
     def speech_embedding_initialize(self):
-        original = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h").cuda()
+        print("Downloading Speech Embedding.....")
+        original = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-es-voxpopuli-v2",force_download=True).cuda()
         speech_embedding = import_huggingface_model(original)
         
         for param in speech_embedding.parameters():
@@ -112,11 +120,11 @@ class Train:
         return speech_embedding
 
 
-
     def create_configure_model(self):
         model = self.model_inicialize()
 
-        #speech_emedding = self.speech_embedding_initialize()
+        #Speech-Embedding
+        self.speech_embedding = self.speech_embedding_initialize()
         
 
 
@@ -129,7 +137,7 @@ class Train:
         distributed_backend = "ddp" if torch.cuda.is_available() else None
 
         # Define Loss function.
-        loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx")
+        loss_func = PITLossWrapper(pairwise_neg_sisdr, speech_embedding = self.speech_embedding,weight_CS = self.weight_CS,pit_from="pw_mtx",num_layers=self.num_layers)
 
         self.system = System(
                     model=model,
